@@ -1,7 +1,7 @@
-use actix_web::{get, App, HttpResponse, HttpServer, Responder, Error};
 use actix_web::web;
-use std::fs::File;
+use actix_web::{get, App, Error, HttpResponse, HttpServer, Responder};
 use pbf_font_tools::protobuf::Message;
+use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
@@ -10,8 +10,10 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
     let glyph = &path.0;
     let range = &path.1;
 
-    let mut split_into_glyphs = glyph.split(",")
-    .map(|x| x.to_string()).collect::<Vec<String>>();
+    let mut split_into_glyphs = glyph
+        .split(",")
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
 
     if split_into_glyphs.len() == 0 {
         return Ok(HttpResponse::BadRequest().body("No glyphs specified"));
@@ -23,10 +25,20 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
 
     let (range_start, range_end) = match range_interval.clone().count() {
         2 => {
-            let range_start = range_interval.clone().next().unwrap().parse::<u32>().unwrap();
-            let range_end = range_interval.clone().nth(1).unwrap().parse::<u32>().unwrap();
+            let range_start = range_interval
+                .clone()
+                .next()
+                .unwrap()
+                .parse::<u32>()
+                .unwrap();
+            let range_end = range_interval
+                .clone()
+                .nth(1)
+                .unwrap()
+                .parse::<u32>()
+                .unwrap();
             (range_start, range_end)
-        },
+        }
         _ => {
             return Ok(HttpResponse::BadRequest().body("Invalid range"));
         }
@@ -41,11 +53,12 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
             return Ok(HttpResponse::NotFound().body("Glyph not found"));
         }
 
-        let load_glyph = pbf_font_tools::load_glyphs(path.clone(),
-             glyph_name.as_str(), range_start, range_end).await;
+        let load_glyph =
+            pbf_font_tools::load_glyphs(path.clone(), glyph_name.as_str(), range_start, range_end)
+                .await;
 
         if let Err(e) = &load_glyph {
-            let formatted_err = format!("Error loading glyph: {:?}\n{:#?}",glyph_name, e);
+            let formatted_err = format!("Error loading glyph: {:?}\n{:#?}", glyph_name, e);
             eprintln!("{}", formatted_err);
             return Ok(HttpResponse::InternalServerError().body(formatted_err));
         }
@@ -59,11 +72,10 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
 
     match combined {
         Some(combined) => {
-
             return Ok(HttpResponse::Ok()
-            .content_type("application/x-protobuf")
-            .body(combined.write_to_bytes().unwrap())); 
-        },
+                .content_type("application/x-protobuf")
+                .body(combined.write_to_bytes().unwrap()));
+        }
         None => {
             return Ok(HttpResponse::NoContent().body("No Glyphs found"));
         }
@@ -82,7 +94,7 @@ async fn main() -> std::io::Result<()> {
                 actix_cors::Cors::default()
                     .allow_any_origin()
                     .allow_any_method()
-                    .allow_any_header()
+                    .allow_any_header(),
             )
             .service(get_font)
             .service(index)
