@@ -29,20 +29,25 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
                 .clone()
                 .next()
                 .unwrap()
-                .parse::<u32>()
-                .unwrap();
+                .parse::<u32>();
             let range_end = range_interval
                 .clone()
                 .nth(1)
                 .unwrap()
-                .parse::<u32>()
-                .unwrap();
+                .parse::<u32>();
             (range_start, range_end)
         }
         _ => {
             return Ok(HttpResponse::BadRequest().body("Invalid range"));
         }
     };
+
+    if range_start.is_err() || range_end.is_err() {
+        return Ok(HttpResponse::BadRequest().body("Invalid range"));
+    }
+
+    let range_start = range_start.unwrap();
+    let range_end = range_end.unwrap();
 
     let mut glyphs = Vec::new();
 
