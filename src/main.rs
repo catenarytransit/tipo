@@ -79,6 +79,7 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
         Some(combined) => {
             return Ok(HttpResponse::Ok()
                 .content_type("application/x-protobuf")
+                .insert_header(("Cache-Control", "public, max-age=604800, s-maxage=604800"))
                 .body(combined.write_to_bytes().unwrap()));
         }
         None => {
