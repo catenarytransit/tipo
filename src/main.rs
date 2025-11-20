@@ -1,6 +1,6 @@
 use actix_web::web;
 use actix_web::{get, App, Error, HttpResponse, HttpServer, Responder};
-use pbf_font_tools::protobuf::Message;
+use pbf_font_tools::prost::Message;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
@@ -77,10 +77,12 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
 
     match combined {
         Some(combined) => {
+            let bytes = combined.encode_to_vec();
+
             return Ok(HttpResponse::Ok()
                 .content_type("application/x-protobuf")
                 .insert_header(("Cache-Control", "public, max-age=604800, s-maxage=604800"))
-                .body(combined.write_to_bytes().unwrap()));
+                .body(bytes));
         }
         None => {
             return Ok(HttpResponse::NoContent().body("No Glyphs found"));
@@ -92,6 +94,7 @@ async fn get_font(path: web::Path<(String, String)>) -> Result<HttpResponse, Err
 async fn index() -> impl Responder {
     HttpResponse::Ok().body("Benvenuti al server tipo di Catenary!")
 }
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {

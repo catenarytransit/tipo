@@ -1,11 +1,11 @@
 [package]
 name = "tipo"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 actix = "0.13.5"
 actix-cors = "0.7.0"
-actix-web = "4.9.0"
-pbf_font_tools = "2.5.1"
-tokio = { version = "1.43.0", features = ["full"] }
+actix-web = "4.12.0"
+pbf_font_tools = "3.0.0"
+tokio = { version = "1.48.0", features = ["full"] }
